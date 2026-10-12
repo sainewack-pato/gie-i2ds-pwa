@@ -2038,6 +2038,81 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.warn('PWA : service worker non enregistré', err)));
 }
 </script>
+
+<!-- Correctif provisoire espace apprenant : retrait des panneaux d'administration de démonstration -->
+<style id="i2ds-hide-admin-demo">
+  #admin, #paymentAdmin, #usersAuth, #v166-db,
+  #i2dsAdminDashboard, #i2dsAdmin, .admin-demo-panel {
+    display: none !important;
+    visibility: hidden !important;
+  }
+</style>
+<script id="i2ds-hide-admin-demo-controls">
+(function () {
+  const adminTargets = ["admin", "paymentAdmin", "usersAuth", "v166-db", "i2dsAdminDashboard", "i2dsAdmin"];
+  function hideDemoAdminControls() {
+    document.querySelectorAll("button, a, input[type='button']").forEach(function (el) {
+      const action = (el.getAttribute("onclick") || "") + " " + (el.getAttribute("href") || "");
+      const label = (el.innerText || el.value || "").trim().toLowerCase();
+      const opensAdmin = adminTargets.some(function (id) {
+        return action.includes("'" + id + "'") || action.includes('"' + id + '"') || action.includes("#" + id);
+      });
+      const adminLabel = /gestion des utilisateurs|validation des paiements|base de données.*synchronisation|tableau de bord administrateur|administration gie i2ds/i.test(label);
+      if (opensAdmin || adminLabel) el.style.display = "none";
+    });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", hideDemoAdminControls);
+  } else {
+    hideDemoAdminControls();
+  }
+})();
+</script>
+
+
+<!-- Correctif v2 : masquer les panneaux admin identifiés dans la capture -->
+<style id="i2ds-admin-panels-hide-v2">
+  #dashboard-complet,
+  #database-sync,
+  #v166-db,
+  #payment-admin,
+  #paymentAdmin,
+  #admin-dashboard,
+  .admin-dashboard,
+  [data-role="admin-panel"] {
+    display: none !important;
+  }
+</style>
+<script id="i2ds-admin-panels-hide-v2-js">
+(function () {
+  function hideAdminPanels() {
+    const exactHeadings = [
+      "Tableau de bord administrateur complet",
+      "Base de données & synchronisation"
+    ];
+    document.querySelectorAll("h1,h2,h3,h4").forEach(function (heading) {
+      const title = (heading.textContent || "").trim();
+      if (!exactHeadings.includes(title)) return;
+      let panel = heading;
+      for (let i = 0; i < 5 && panel && panel.parentElement; i++) {
+        panel = panel.parentElement;
+        if (panel.tagName === "SECTION" || panel.id === "dashboard-complet") {
+          panel.style.setProperty("display", "none", "important");
+          break;
+        }
+      }
+    });
+    const direct = document.getElementById("dashboard-complet");
+    if (direct) direct.style.setProperty("display", "none", "important");
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", hideAdminPanels);
+  } else {
+    hideAdminPanels();
+  }
+})();
+</script>
+
 </body></html>
 <style>
 @media print{
